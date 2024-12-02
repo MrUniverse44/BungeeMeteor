@@ -127,6 +127,8 @@ public class MongoDatabaseService extends StorageDatabase implements AdvancedMod
         Class<?> clazz = obj.getClass();
         Document document = new Document();
 
+        Set<String> extraIdentifier = new HashSet<>();
+
         String identifierValue = null;
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
@@ -137,6 +139,9 @@ public class MongoDatabaseService extends StorageDatabase implements AdvancedMod
                 Object value = field.get(obj);
                 if (field.isAnnotationPresent(StorageIdentifier.class)) {
                     identifierValue = value.toString();
+                }
+                if (field.isAnnotationPresent(StorageExtraIdentifier.class)) {
+                    extraIdentifier.add(value.toString());
                 }
                 String name = field.getName();
 
@@ -164,6 +169,7 @@ public class MongoDatabaseService extends StorageDatabase implements AdvancedMod
 
         if (identifierValue != null) {
             collection.replaceOne(eq("_id", identifierValue), document, new ReplaceOptions().upsert(true));
+            extraIdentifier.forEach(id -> collection.replaceOne(eq("_id", id), document, new ReplaceOptions().upsert(true)));
         } else {
             collection.insertOne(document);
         }
