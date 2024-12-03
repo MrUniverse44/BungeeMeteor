@@ -11,14 +11,13 @@ import me.blueslime.bungeemeteor.implementation.Implements;
 import me.blueslime.bungeemeteor.implementation.module.AdvancedModule;
 import me.blueslime.bungeemeteor.storage.StorageDatabase;
 import me.blueslime.bungeemeteor.storage.interfaces.*;
+import me.blueslime.bungeemeteor.storage.object.ReferencedObject;
 import org.bson.Document;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import static com.mongodb.client.model.Filters.eq;
 
@@ -166,10 +165,27 @@ public class MongoDatabaseService extends StorageDatabase implements AdvancedMod
         }
 
         MongoCollection<Document> collection = database.getCollection(clazz.getSimpleName());
+        MongoCollection<Document> collectionNaming = database.getCollection(clazz.getSimpleName() + "-StringNaming");
 
         if (identifierValue != null) {
             collection.replaceOne(eq("_id", identifierValue), document, new ReplaceOptions().upsert(true));
-            extraIdentifier.forEach(id -> collection.replaceOne(eq("_id", id), document, new ReplaceOptions().upsert(true)));
+            if (!extraIdentifier.isEmpty()) {
+                Document idFetch = new Document();
+                idFetch.append("referenced", identifierValue);
+
+                for (String extra : extraIdentifier) {
+                    Document completed = new Document();
+                    completed.append("extra", extra);
+                    completed.append("data", idFetch);
+
+                    collectionNaming.replaceOne(
+                        eq("_id", extra.toLowerCase(Locale.ENGLISH)),
+                        completed,
+                        new ReplaceOptions()
+                            .upsert(true)
+                    );
+                }
+            }
         } else {
             collection.insertOne(document);
         }
@@ -213,6 +229,32 @@ public class MongoDatabaseService extends StorageDatabase implements AdvancedMod
         }
 
         return embeddedDocument;
+    }
+
+    @Override
+    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier) {
+        if (database == null) {
+            throw new IllegalStateException("No connection established. Call connect() first.");
+        }
+        return CompletableFuture.supplyAsync(() -> {
+            String extra = extraIdentifier.toLowerCase(Locale.ENGLISH);
+
+            MongoCollection<Document> collection = database.getCollection(clazz.getSimpleName() + "-StringNaming");
+            Document doc = collection.find(eq("_id", extra)).first();
+
+            if (doc != null) {
+                String original = doc.getString("extra");
+
+                Document document = (Document) doc.get("data");
+                String reference = document.getString("referenced");
+
+                return Optional.of(new ReferencedObject(
+                    original,
+                    reference
+                ));
+            }
+            return Optional.empty();
+        });
     }
 
     @Override

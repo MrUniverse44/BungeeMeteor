@@ -3,6 +3,7 @@ package me.blueslime.bungeemeteor.storage;
 import me.blueslime.bungeemeteor.storage.interfaces.StorageConstructor;
 import me.blueslime.bungeemeteor.storage.interfaces.StorageKey;
 import me.blueslime.bungeemeteor.storage.interfaces.StorageObject;
+import me.blueslime.bungeemeteor.storage.object.ReferencedObject;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -12,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class StorageDatabase {
+
+    public abstract <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier);
 
     public abstract <T extends StorageObject> CompletableFuture<Optional<T>> loadByIdAsync(Class<T> clazz, String identifier);
 

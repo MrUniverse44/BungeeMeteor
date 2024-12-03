@@ -4,6 +4,7 @@ import me.blueslime.bungeemeteor.implementation.Implements;
 import me.blueslime.bungeemeteor.implementation.module.AdvancedModule;
 import me.blueslime.bungeemeteor.storage.StorageDatabase;
 import me.blueslime.bungeemeteor.storage.interfaces.*;
+import me.blueslime.bungeemeteor.storage.object.ReferencedObject;
 import me.blueslime.bungeeutilitiesapi.utils.consumer.PluginConsumer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -214,6 +215,12 @@ public class YamlDatabaseService extends StorageDatabase implements AdvancedModu
                 type.equals(Float.class);
     }
 
+
+    @Override
+    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier) {
+        //TODO: Extra ID System
+        return null;
+    }
 
     @Override
     public <T extends StorageObject> CompletableFuture<Optional<T>> loadByIdAsync(Class<T> clazz, String identifier) {

@@ -4,6 +4,7 @@ import me.blueslime.bungeemeteor.implementation.Implements;
 import me.blueslime.bungeemeteor.implementation.module.AdvancedModule;
 import me.blueslime.bungeemeteor.storage.StorageDatabase;
 import me.blueslime.bungeemeteor.storage.interfaces.*;
+import me.blueslime.bungeemeteor.storage.object.ReferencedObject;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -264,6 +265,12 @@ public class PostgreDatabaseService extends StorageDatabase implements AdvancedM
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    @Override
+    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier) {
+        //TODO: Extra ID System
         return null;
     }
 
