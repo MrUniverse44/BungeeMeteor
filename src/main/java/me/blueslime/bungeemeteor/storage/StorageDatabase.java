@@ -14,7 +14,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class StorageDatabase {
 
-    public abstract <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier);
+    public abstract <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifierAsync(Class<T> clazz, String extraIdentifier);
+
+    public abstract <T extends StorageObject> Optional<ReferencedObject> loadByExtraIdentifierSync(Class<T> clazz, String extraIdentifier);
 
     public abstract <T extends StorageObject> CompletableFuture<Optional<T>> loadByIdAsync(Class<T> clazz, String identifier);
 

@@ -232,29 +232,35 @@ public class MongoDatabaseService extends StorageDatabase implements AdvancedMod
     }
 
     @Override
-    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier) {
+    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifierAsync(Class<T> clazz, String extraIdentifier) {
         if (database == null) {
             throw new IllegalStateException("No connection established. Call connect() first.");
         }
-        return CompletableFuture.supplyAsync(() -> {
-            String extra = extraIdentifier.toLowerCase(Locale.ENGLISH);
+        return CompletableFuture.supplyAsync(() -> loadByExtraIdentifierSync(clazz, extraIdentifier));
+    }
 
-            MongoCollection<Document> collection = database.getCollection(clazz.getSimpleName() + "-StringNaming");
-            Document doc = collection.find(eq("_id", extra)).first();
+    @Override
+    public <T extends StorageObject> Optional<ReferencedObject> loadByExtraIdentifierSync(Class<T> clazz, String extraIdentifier) {
+        if (database == null) {
+            throw new IllegalStateException("No connection established. Call connect() first.");
+        }
+        String extra = extraIdentifier.toLowerCase(Locale.ENGLISH);
 
-            if (doc != null) {
-                String original = doc.getString("extra");
+        MongoCollection<Document> collection = database.getCollection(clazz.getSimpleName() + "-StringNaming");
+        Document doc = collection.find(eq("_id", extra)).first();
 
-                Document document = (Document) doc.get("data");
-                String reference = document.getString("referenced");
+        if (doc != null) {
+            String original = doc.getString("extra");
 
-                return Optional.of(new ReferencedObject(
+            Document document = (Document) doc.get("data");
+            String reference = document.getString("referenced");
+
+            return Optional.of(new ReferencedObject(
                     original,
                     reference
-                ));
-            }
-            return Optional.empty();
-        });
+            ));
+        }
+        return Optional.empty();
     }
 
     @Override

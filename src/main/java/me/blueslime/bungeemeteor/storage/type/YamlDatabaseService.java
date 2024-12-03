@@ -217,9 +217,15 @@ public class YamlDatabaseService extends StorageDatabase implements AdvancedModu
 
 
     @Override
-    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifier(Class<T> clazz, String extraIdentifier) {
+    public <T extends StorageObject> CompletableFuture<Optional<ReferencedObject>> loadByExtraIdentifierAsync(Class<T> clazz, String extraIdentifier) {
         //TODO: Extra ID System
         return null;
+    }
+
+    @Override
+    public <T extends StorageObject> Optional<ReferencedObject> loadByExtraIdentifierSync(Class<T> clazz, String extraIdentifier) {
+        //TODO: Extra ID System
+        return Optional.empty();
     }
 
     @Override
